@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 import csv
-# import pymongo
+from lxml import html
+import requests
+import pymongo
 
 
 def main():
     (city, month, year) = get_info()
     database = get_connection()
-    get_data(city, month, year, database)if database else get_data(
-        city, month, year)
+    get_data(city, month, year, database)
 
 
 def get_info():
@@ -39,8 +40,10 @@ def year_transform(year):
 
 def get_connection():
     try:
-        connection = pymongo.MongoClient("localhost", 27017)
+        connection = pymongo.MongoClient(
+            "localhost", 27017, serverSelectionTimeoutMS=3000)
         db = connection["MongoDB_Samuel_01"]
+        db.server_info()
     except:
         print('Sem banco de dados!')
         db = None
@@ -49,6 +52,9 @@ def get_connection():
 
 
 def get_data(city, month, year, database=None):
+    cities_csv = csv.reader(open('cidade.csv'), delimiter='|')
+    cities_list = list(cities_csv)
+
     if (str(month) == 'todos') and (str(year) != 'todos'):
         print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
         Novo = open('HIST_TODOS_ANO%s_%s.csv' %
@@ -60,12 +66,8 @@ def get_data(city, month, year, database=None):
                    (city, month))
 
         while month < 13:
-            if database:
-                mes_a_mes = busca_site(
-                    city, month, year, database)
-            else:
-                mes_a_mes = busca_site(
-                    city, month, year)
+            mes_a_mes = busca_site(
+                city, month, year, cities_list, database)
             month += 1
             Novo.write(mes_a_mes)
         Novo.close()
@@ -80,8 +82,7 @@ def get_data(city, month, year, database=None):
         Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % city)
 
         while year < 2018:
-            mes_a_mes = busca_site(
-                city, month, year, database)
+            mes_a_mes = busca_site(city, month, year, cities_list, database)
             Novo.write(mes_a_mes)
             year += 1
         Novo.close()
@@ -98,7 +99,7 @@ def get_data(city, month, year, database=None):
         while year < 2018:
             while month < 13:
                 mes_a_mes = busca_site(
-                    city, month, year, database)
+                    city, month, year, cities_list, database)
                 month += 1
                 Novo.write(mes_a_mes)
             year += 1
@@ -107,20 +108,19 @@ def get_data(city, month, year, database=None):
 
     if (str(month) != 'todos') and (str(year) != 'todos'):
         print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
-        resultado_comum = busca_site(
-            city, month, year, database)
+        resultado_comum = busca_site(city, month, year, cities_list, database)
 
 
 def write_csv(file, message):
     ...
 
 
-def busca_site(cidade, mes, ano, db=''):
+def busca_site(city, month, year, cities_list, db=None):
 
-    for row_ListarCidades in cities_list:
-        if city == str(row_ListarCidades[0]):
+    for row in cities_list:
+        if city == str(row[0]):
             page = requests.get(str('http://freemeteo.com.br/clima/%s/historico/historico-por-mes/?gid=%s&station=%s&month=%s&year=%s&language=portuguesebr&country=brazil') %
-                                (str(row_ListarCidades[0]), str(row_ListarCidades[1]), str(row_ListarCidades[2]), mes, ano))
+                                (str(row[0]), str(row[1]), str(row[2]), month, year))
             tree = html.fromstring(page.content)
 
     Linha = 1
@@ -177,13 +177,13 @@ def busca_site(cidade, mes, ano, db=''):
                 ' | ' + str(descricao) + '\n'
 
             if db:
-                db.climas.update(
+                db.climas.update_one(
                     {
                         "dia": str(dia),
-                        "cidade": str(cidade)
+                        "cidade": str(city)
                     },
                     {
-                        "cidade": str(cidade),
+                        "cidade": str(city),
                         "dia": str(dia),
                         "temp_min_dia": str(temp_min_dia),
                         "temp_max_dia": str(temp_max_dia),
