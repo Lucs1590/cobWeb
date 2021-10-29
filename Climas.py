@@ -51,7 +51,7 @@ def get_connection():
 
 
 def get_data(city, month, year, database=None):
-    cities_csv = csv.reader(open('cidade.csv'), delimiter='|')
+    cities_csv = csv.reader(open('aux/cities.csv'), delimiter='|')
     cities_list = list(cities_csv)
 
     if (str(month) == 'todos') and (str(year) != 'todos'):
@@ -174,7 +174,7 @@ def busca_site(city, month, year, cities_list, db=None):
                     "temp_max_dia": ''.join(temp_max_dia),
                     "vent_const_max": ''.join(vent_const_max),
                     "rajad_vent_max": ''.join(rajad_vent_max),
-                    "descricao": ', '.join(descricao)
+                    "descricao": descricao
                 },
                 upsert=True
             )
