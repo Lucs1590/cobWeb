@@ -6,7 +6,49 @@ import csv
 def main():
     (city, month, year) = get_info()
     database = get_connection()
+    get_data(city, month, year, database)if database else get_data(
+        city, month, year)
 
+
+def get_info():
+    print("Digite o nome da cidade (sem caracteres especiais).")
+    city = input('Cidade: ').lower().replace(' ', '-')
+    month = month_transform(input("Mes: ").lower())
+    year = year_transform(input("Ano: "))
+    return (city, month, year)
+
+
+def month_transform(month):
+    try:
+        month = int(month)
+    except:
+        months_list = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+                       'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+        month = months_list.index(
+            month) + 1 if month in months_list else 'todos'
+    return month
+
+
+def year_transform(year):
+    try:
+        year = int(year)
+    except:
+        ...
+    return year
+
+
+def get_connection():
+    try:
+        connection = pymongo.MongoClient("localhost", 27017)
+        db = connection["MongoDB_Samuel_01"]
+    except:
+        print('Sem banco de dados!')
+        db = None
+
+    return db
+
+
+def get_data(city, month, year, database=None):
     if (str(month) == 'todos') and (str(year) != 'todos'):
         print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
         Novo = open('HIST_TODOS_ANO%s_%s.csv' %
@@ -69,33 +111,8 @@ def main():
             city, month, year, database)
 
 
-def get_info():
-    print("Digite o nome da cidade (sem caracteres especiais).")
-    city = input('Cidade: ').lower().replace(' ', '-')
-    month = month_transform(input("Mes: ").lower())
-    year = input("Ano: ")
-    return (city, month, year)
-
-
-def month_transform(month):
-    try:
-        month = int(month)
-    except:
-        months_list = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
-                       'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
-        month = months_list.index(
-            month) + 1 if month in months_list else 'todos'
-    return month
-
-
-def get_connection():
-    try:
-        connection = pymongo.MongoClient("localhost", 27017)
-        datab = connection["MongoDB_Samuel_01"]
-    except:
-        print('Sem banco de dados!')
-
-    return datab if datab else None
+def write_csv(file, message):
+    ...
 
 
 def busca_site(cidade, mes, ano, db=''):
