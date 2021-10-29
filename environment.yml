@@ -57,5 +57,5 @@ dependencies:
   - zlib=1.2.11
   - zstd=1.4.9
   - pip:
-    - libiconv=1.16
-    - libcxx=12.0.0
+    - libiconv==1.16
+    - libcxx==12.0.0
