@@ -17,9 +17,7 @@ dependencies:
   - idna=3.2
   - importlib-metadata=4.8.1
   - lcms2=2.12
-  - libcxx=12.0.0
   - libffi=3.3
-  - libiconv=1.16
   - libpng=1.6.37
   - libtiff=4.2.0
   - libwebp=1.2.0
@@ -58,3 +56,6 @@ dependencies:
   - zipp=3.6.0
   - zlib=1.2.11
   - zstd=1.4.9
+  - pip:
+    - libiconv=1.16
+    - libcxx=12.0.0
