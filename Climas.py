@@ -3,31 +3,99 @@ import csv
 # import pymongo
 
 
+def main():
+    (city, month, year) = get_info()
+
+    cities_csv = csv.reader(open('cidade.csv'), delimiter='|')
+    cities_list = list(cities_csv)
+
+    try:
+        conexao = pymongo.MongoClient("localhost", 27017)
+        datab = conexao["MongoDB_Samuel_01"]
+    except:
+        print('Sem banco de dados!')
+
+    city = str.replace(city, ' ', '-')
+    month = month_transform(month)
+
+    if (str(month) == 'todos') and (str(year) != 'todos'):
+        print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
+        Novo = open('HIST_TODOS_ANO%s_%s.csv' %
+                    (year, city), 'w')
+        Novo.write(
+            "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao\n\n")
+        month = 1
+        Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s, NO MES %d\n\n' %
+                   (city, month))
+
+        while month < 13:
+            if datab:
+                mes_a_mes = busca_site(
+                    city, month, year, datab)
+            else:
+                mes_a_mes = busca_site(
+                    city, month, year)
+            month += 1
+            Novo.write(mes_a_mes)
+        Novo.close()
+
+    if (str(month) != 'todos') and (str(year) == 'todos'):
+        print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
+        Novo = open('HIST_MES%s_TODOS_%s.csv' %
+                    (month, city), 'w')
+        Novo.write(
+            "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao\n\n")
+        year = 2015
+        Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % city)
+
+        while year < 2018:
+            mes_a_mes = busca_site(
+                city, month, year, datab)
+            Novo.write(mes_a_mes)
+            year += 1
+        Novo.close()
+
+    if (str(month) == 'todos') and (str(year) == 'todos'):
+        print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
+        Novo = open('HIST_GERAL_%s.csv' % city, 'w')
+        Novo.write(
+            "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao\n\n")
+        month = 1
+        year = 2015
+        Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % city)
+
+        while year < 2018:
+            while month < 13:
+                mes_a_mes = busca_site(
+                    city, month, year, datab)
+                month += 1
+                Novo.write(mes_a_mes)
+            year += 1
+            month = 1
+        Novo.close()
+
+    if (str(month) != 'todos') and (str(year) != 'todos'):
+        print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
+        resultado_comum = busca_site(
+            city, month, year, datab)
+
+
+def get_info():
+    print("Digite o nome da cidade (sem caracteres especiais).")
+    city = input('Cidade: ').lower()
+    month = input("Mes: ").lower()
+    year = input("Ano: ")
+    return (city, month, year)
+
+
 def month_transform(month):
-    if month == 'janeiro':
-        month = '1'
-    if month == 'fevereiro':
-        month = '2'
-    if month == 'março':
-        month = '3'
-    if month == 'abril':
-        month = '4'
-    if month == 'maio':
-        month = '5'
-    if month == 'junho':
-        month = '6'
-    if month == 'julho':
-        month = '7'
-    if month == 'agosto':
-        month = '8'
-    if month == 'setembro':
-        month = '9'
-    if month == 'outubro':
-        month = '10'
-    if month == 'novembro':
-        month = '11'
-    if month == 'dezembro':
-        month = '12'
+    try:
+        month = int(month)
+    except:
+        months_list = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+                       'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+        month = months_list.index(
+            month) + 1 if month in months_list else 'todos'
     return month
 
 
@@ -116,80 +184,5 @@ def busca_site(cidade, mes, ano, db=''):
     return aux
 
 
-print("Digite o nome da cidade (sem caracteres especiais).")
-city = input('Cidade: ').lower()
-month = input("Mes: ").lower()
-year = input("Ano: ")
-
-cities_csv = csv.reader(open('cidade.csv'), delimiter='|')
-cities_list = list(cities_csv)
-
-try:
-    conexao = pymongo.MongoClient("localhost", 27017)
-    datab = conexao["MongoDB_Samuel_01"]
-except:
-    print('Sem banco de dados!')
-
-city = str.replace(city, ' ', '-')
-month = month_transform(month)
-
-if (str(month) == 'todos') and (str(year) != 'todos'):
-    print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
-    Novo = open('HIST_TODOS_ANO%s_%s.csv' %
-                (year, city), 'w')
-    Novo.write(
-        "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao\n\n")
-    month = 1
-    Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s, NO MES %d\n\n' %
-               (city, month))
-
-    while month < 13:
-        if datab:
-            mes_a_mes = busca_site(
-                city, month, year, datab)
-        else:
-            mes_a_mes = busca_site(
-                city, month, year)
-        month += 1
-        Novo.write(mes_a_mes)
-    Novo.close()
-
-if (str(month) != 'todos') and (str(year) == 'todos'):
-    print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
-    Novo = open('HIST_MES%s_TODOS_%s.csv' %
-                (month, city), 'w')
-    Novo.write(
-        "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao\n\n")
-    year = 2015
-    Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % city)
-
-    while year < 2018:
-        mes_a_mes = busca_site(
-            city, month, year, datab)
-        Novo.write(mes_a_mes)
-        year += 1
-    Novo.close()
-
-if (str(month) == 'todos') and (str(year) == 'todos'):
-    print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
-    Novo = open('HIST_GERAL_%s.csv' % city, 'w')
-    Novo.write(
-        "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao\n\n")
-    month = 1
-    year = 2015
-    Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % city)
-
-    while year < 2018:
-        while month < 13:
-            mes_a_mes = busca_site(
-                city, month, year, datab)
-            month += 1
-            Novo.write(mes_a_mes)
-        year += 1
-        month = 1
-    Novo.close()
-
-if (str(month) != 'todos') and (str(year) != 'todos'):
-    print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
-    resultado_comum = busca_site(
-        city, month, year, datab)
+if __name__ == '__main__':
+    main()
