@@ -1,11 +1,10 @@
-from __future__ import print_function
 import os
-import Tkinter
+import tkinter
 import Image
 import ttk
-from Tkinter import Canvas
+from tkinter import Canvas
 import ImageTk
-top = Tkinter.Tk()
+top = tkinter.Tk()
 
 top.title('CobWeb.exe')
 # Arquitetura
@@ -53,15 +52,15 @@ canvas3.create_image(150, 150, image=photoimage3)
 # Botao
 LabelF = ttk.Label(top, text="CobWeb", font=("Arial", 16))
 LabelF.configure(background="white")
-Exit = Tkinter.Button(top, font=("Century", 12), text="Sair", command=quit)
+Exit = tkinter.Button(top, font=("Century", 12), text="Sair", command=quit)
 Exit.configure(background="black", foreground="white")
-Erosion = Tkinter.Button(top, font=("Century", 12),
+Erosion = tkinter.Button(top, font=("Century", 12),
                          text="Clima", command=Clima)
 Erosion.configure(background="black", foreground="white")
-erva = Tkinter.Button(top, font=("Century", 12),
+erva = tkinter.Button(top, font=("Century", 12),
                       text="Plantas Daninhas", command=Plantas)
 erva.configure(background="black", foreground="white")
-Nivel = Tkinter.Button(top, font=("Century", 12),
+Nivel = tkinter.Button(top, font=("Century", 12),
                        text="Pragas", command=Pragas)
 Nivel.configure(background="black", foreground="white")
 LabelF.place(relx=0.5, rely=0, anchor="n")

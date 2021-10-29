@@ -26,8 +26,8 @@ especiais01 = [['\\xc0', 'À'], ['\\xc1', 'Á'],	['\\xc2', 'Â'],	['\\xc3', 'Ã'
 
 # --------------------------------------------------------INTERACAO-------------------------------------------------------------------------------------
 
-tipo = str(raw_input('Tipo (Inseto ou Doença): ').lower().capitalize())
-cultura = str(raw_input('Cultura: ').lower().capitalize())
+tipo = str(input('Tipo (Inseto ou Doença): ').lower().capitalize())
+cultura = str(input('Cultura: ').lower().capitalize())
 n_cultura = str(cultura)
 
 for x in especiais01:
@@ -56,7 +56,7 @@ while Linha < 6300:
     culturasite = str(culturasite[0].strip('\n\t').encode(
         'utf-8')) if culturasite != [] else "NÃO REGISTRADO"
 
-    print tipo + ":" + tiposite + "| linha: " + str(Linha)
+    print(tipo + ":" + tiposite + "| linha: " + str(Linha))
 
     if (str(tipo) in "*"+str(tiposite)+"*"):
         if (str(n_cultura) in "*"+str(culturasite)+"*"):

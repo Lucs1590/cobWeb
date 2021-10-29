@@ -78,14 +78,14 @@ def busca_site(cidade, mes, ano, db):
 
         Linha += 1
 
-    print aux
+    print(aux)
     return aux
 
 
 print("Digite o nome da cidade (sem caracteres especiais).")
-escolher_cidade = raw_input('Cidade: ').lower()
-escolher_mes = raw_input("Mes: ").lower()
-escolher_ano = raw_input("Ano: ")
+escolher_cidade = input('Cidade: ').lower()
+escolher_mes = input("Mes: ").lower()
+escolher_ano = input("Ano: ")
 
 OpenCidades = open('cidade.csv')
 LerCidades = csv.reader(OpenCidades, delimiter='|')
@@ -122,7 +122,7 @@ if escolher_mes == 'dezembro':
     escolher_mes = '12'
 
 if (str(escolher_mes) == 'todos') and (str(escolher_ano) != 'todos'):
-    print "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao"
+    print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
     Novo = open('HIST_TODOS_ANO%s_%s.csv' %
                 (escolher_ano, escolher_cidade), 'w')
     Novo.write(
@@ -139,7 +139,7 @@ if (str(escolher_mes) == 'todos') and (str(escolher_ano) != 'todos'):
     Novo.close()
 
 if (str(escolher_mes) != 'todos') and (str(escolher_ano) == 'todos'):
-    print "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao"
+    print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
     Novo = open('HIST_MES%s_TODOS_%s.csv' %
                 (escolher_mes, escolher_cidade), 'w')
     Novo.write(
@@ -155,7 +155,7 @@ if (str(escolher_mes) != 'todos') and (str(escolher_ano) == 'todos'):
     Novo.close()
 
 if (str(escolher_mes) == 'todos') and (str(escolher_ano) == 'todos'):
-    print "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao"
+    print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
     Novo = open('HIST_GERAL_%s.csv' % escolher_cidade, 'w')
     Novo.write(
         "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao\n\n")
@@ -174,6 +174,6 @@ if (str(escolher_mes) == 'todos') and (str(escolher_ano) == 'todos'):
     Novo.close()
 
 if (str(escolher_mes) != 'todos') and (str(escolher_ano) != 'todos'):
-    print "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao"
+    print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
     resultado_comum = busca_site(
         escolher_cidade, escolher_mes, escolher_ano, datab)
