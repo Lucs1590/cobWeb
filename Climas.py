@@ -108,7 +108,7 @@ def get_data(city, month, year, database=None):
 
     if (str(month) != 'todos') and (str(year) != 'todos'):
         print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
-        resultado_comum = busca_site(city, month, year, cities_list, database)
+        busca_site(city, month, year, cities_list, database)
 
 
 def write_csv(file, message):
@@ -123,78 +123,64 @@ def busca_site(city, month, year, cities_list, db=None):
                                 (str(row[0]), str(row[1]), str(row[2]), month, year))
             tree = html.fromstring(page.content)
 
-    Linha = 1
-    dia = []
-    temp_min_dia = []
-    temp_max_dia = []
-    vent_const_max = []
-    rajad_vent_max = []
-    descricao = []
-    aux = ""
+    i = 1
+    aux = ''
 
-    while Linha < 32:
+    while i < 32:
         dia = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[1]/a/text()' % Linha)
+            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[1]/a/text()' % i)
         temp_min_dia = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[2]/text()' % Linha)
+            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[2]/text()' % i)
         temp_max_dia = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[3]/text()' % Linha)
+            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[3]/text()' % i)
         vent_const_max = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[4]/text()' % Linha)
+            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[4]/text()' % i)
         rajad_vent_max = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[5]/text()' % Linha)
+            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[5]/text()' % i)
         descricao = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[10]/text()' % Linha)
+            'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[10]/text()' % i)
 
-        if (len(str(dia)) > 2) and (len(str(temp_min_dia)) > 2) and (len(str(temp_max_dia)) > 2) and (len(str(vent_const_max)) > 2) and (len(str(rajad_vent_max)) > 2) and (len(str(descricao)) > 2):
-            dia = str(dia[0].strip('\n\t').encode(
-                'utf-8')) if dia != [] else ""
-            if dia == 'N/A':
-                dia == '--/--/----'
-            temp_min_dia = str(temp_min_dia[0].strip('\n\t').encode(
-                'utf-8')) if temp_min_dia != [] else ""
-            if temp_min_dia == 'N/A':
-                temp_min_dia = '--ºC'
-            temp_max_dia = str(temp_max_dia[0].strip('\n\t').encode(
-                'utf-8')) if temp_max_dia != [] else ""
-            if temp_max_dia == 'N/A':
-                temp_max_dia = '--ºC'
-            vent_const_max = str(vent_const_max[0].strip(
-                '\n\t').encode('utf-8')) if vent_const_max != [] else ""
-            if vent_const_max == 'N/A':
-                vent_const_max = '-- Km/h'
-            rajad_vent_max = str(rajad_vent_max[0].strip(
-                '\n\t').encode('utf-8')) if rajad_vent_max != [] else ""
-            if rajad_vent_max == 'N/A':
-                rajad_vent_max = '-- Km/h'
-            descricao = str(descricao[0].strip('\n\t').encode(
-                'utf-8')) if descricao != [] else ""
-            if descricao == 'eventos climáticos não informados':
-                descricao = '--'
+        if len(dia) == 0:
+            dia == '--/--/----'
 
-            aux = aux + str(dia) + ' | ' + str(temp_min_dia) + ' | ' + str(temp_max_dia) + ' | ' + \
-                str(vent_const_max) + ' | ' + str(rajad_vent_max) + \
-                ' | ' + str(descricao) + '\n'
+        if len(temp_min_dia) == 0:
+            temp_min_dia = '--ºC'
 
-            if db:
-                db.climas.update_one(
-                    {
-                        "dia": str(dia),
-                        "cidade": str(city)
-                    },
-                    {
-                        "cidade": str(city),
-                        "dia": str(dia),
-                        "temp_min_dia": str(temp_min_dia),
-                        "temp_max_dia": str(temp_max_dia),
-                        "vent_const_max": str(vent_const_max),
-                        "rajad_vent_max": str(rajad_vent_max),
-                        "descricao": str(descricao)
-                    },
-                    upsert=True
-                )
+        if len(temp_max_dia) == 0:
+            temp_max_dia = '--ºC'
 
-        Linha += 1
+        if len(vent_const_max) == 0:
+            vent_const_max = '-- Km/h'
+
+        if len(rajad_vent_max) == 0:
+            rajad_vent_max = '-- Km/h'
+
+        if len(descricao) == 0:
+            descricao = '--'
+
+        aux += ' '.join(dia) + ' | ' + ' '.join(temp_min_dia) + ' | ' + ' '.join(temp_max_dia) + ' | ' + \
+            ' '.join(vent_const_max) + ' | ' + ' '.join(rajad_vent_max) + \
+            ' | ' + ', '.join(descricao) + ' \n'
+
+        if db:
+            db.climas.update_one(
+                {
+                    "dia": str(dia),
+                    "cidade": str(city)
+                },
+                {
+                    "cidade": str(city),
+                    "dia": str(dia),
+                    "temp_min_dia": ' '.join(temp_min_dia),
+                    "temp_max_dia": ' '.join(temp_max_dia),
+                    "vent_const_max": ' '.join(vent_const_max),
+                    "rajad_vent_max": ' '.join(rajad_vent_max),
+                    "descricao": ', '.join(descricao)
+                },
+                upsert=True
+            )
+
+        i += 1
 
     print(aux)
     return aux
