@@ -57,12 +57,12 @@ def get_data(city, month, year, database=None):
 
     if (str(month) == 'todos') and (str(year) != 'todos'):
         print('Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
-             | Corrente de Vento Max. | Descricao')
+ | Corrente de Vento Max. | Descricao')
         Novo = open('HIST_TODOS_ANO%s_%s.csv' %
                     (year, city), 'w')
         Novo.write(
             'Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
-                 | Corrente de Vento Max. | Descricao\n\n')
+ | Corrente de Vento Max. | Descricao\n\n')
         month = 1
         Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s, NO MES %d\n\n' %
                    (city, month))
@@ -76,12 +76,12 @@ def get_data(city, month, year, database=None):
 
     if (str(month) != 'todos') and (str(year) == 'todos'):
         print('Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
-             | Corrente de Vento Max. | Descricao')
+ | Corrente de Vento Max. | Descricao')
         Novo = open('HIST_MES%s_TODOS_%s.csv' %
                     (month, city), 'w')
         Novo.write(
             'Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
-                 | Corrente de Vento Max. | Descricao\n\n')
+ | Corrente de Vento Max. | Descricao\n\n')
         year = 2015
         Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % city)
 
@@ -93,11 +93,11 @@ def get_data(city, month, year, database=None):
 
     if (str(month) == 'todos') and (str(year) == 'todos'):
         print('Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
-             | Corrente de Vento Max. | Descricao')
+ | Corrente de Vento Max. | Descricao')
         Novo = open('HIST_GERAL_%s.csv' % city, 'w')
         Novo.write(
             'Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
-                 | Corrente de Vento Max. | Descricao\n\n')
+ | Corrente de Vento Max. | Descricao\n\n')
         month = 1
         year = 2015
         Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % city)
@@ -114,7 +114,7 @@ def get_data(city, month, year, database=None):
 
     if (str(month) != 'todos') and (str(year) != 'todos'):
         print('Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
-             | Corrente de Vento Max. | Descricao')
+ | Corrente de Vento Max. | Descricao')
         busca_site(city, month, year, cities_list, database)
 
 
@@ -123,19 +123,22 @@ def write_csv(file, message):
 
 
 def busca_site(city, month, year, cities_list, db=None):
-
-    for row in cities_list:
-        if city == str(row[0]):
-            page = requests.get(
-                'http://freemeteo.com.br/clima/{0}/historico/historico-por-mes/?gid={1}&station={2}&month={3}&year={4}&language=portuguesebr&country=brazil'
-                .format(
-                    str(row[0]),
-                    str(row[1]),
-                    str(row[2]),
-                    month,
-                    year)
-            )
-            tree = html.fromstring(page.content)
+    city_data = list(filter(lambda x: x[0] == city, cities_list))
+    if len(city_data):
+        city_data = city_data[0]
+    else:
+        raise ValueError('Cidade não foi encontrada!')
+    page = requests.get(
+        'http://freemeteo.com.br/clima/{0}/historico/historico-por-mes/\
+                    ?gid={1}&station={2}&month={3}&year={4}&language=portuguesebr&country=brazil'
+        .format(
+            str(city_data[0]),
+            str(city_data[1]),
+            str(city_data[2]),
+            month,
+            year)
+    )
+    tree = html.fromstring(page.content)
 
     i = 1
     aux = ''
@@ -184,12 +187,12 @@ def busca_site(city, month, year, cities_list, db=None):
         if len(descricao) == 0:
             descricao = '-'
 
-        aux += ''.join(dia) + ' | '
-        + ''.join(temp_min_dia) + ' | '
-        + ''.join(temp_max_dia) + ' | '
-        + ''.join(vent_const_max) + ' | '
-        + ''.join(rajad_vent_max) + ' | '
-        + ','.join(descricao) + ' \n'
+        aux += ''.join(dia) + ' | '\
+            + ''.join(temp_min_dia) + ' | '\
+            + ''.join(temp_max_dia) + ' | '\
+            + ''.join(vent_const_max) + ' | '\
+            + ''.join(rajad_vent_max) + ' | '\
+            + ','.join(descricao) + ' \n'
 
         if db:
             db.climas.update_one(
