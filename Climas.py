@@ -1,13 +1,40 @@
-from lxml import html
-import requests
+# -*- coding: utf-8 -*-
 import csv
-import pymongo
+# import pymongo
 
 
-def busca_site(cidade, mes, ano, db):
+def month_transform(month):
+    if month == 'janeiro':
+        month = '1'
+    if month == 'fevereiro':
+        month = '2'
+    if month == 'março':
+        month = '3'
+    if month == 'abril':
+        month = '4'
+    if month == 'maio':
+        month = '5'
+    if month == 'junho':
+        month = '6'
+    if month == 'julho':
+        month = '7'
+    if month == 'agosto':
+        month = '8'
+    if month == 'setembro':
+        month = '9'
+    if month == 'outubro':
+        month = '10'
+    if month == 'novembro':
+        month = '11'
+    if month == 'dezembro':
+        month = '12'
+    return month
 
-    for row_ListarCidades in ListarCidades:
-        if escolher_cidade == str(row_ListarCidades[0]):
+
+def busca_site(cidade, mes, ano, db=''):
+
+    for row_ListarCidades in cities_list:
+        if city == str(row_ListarCidades[0]):
             page = requests.get(str('http://freemeteo.com.br/clima/%s/historico/historico-por-mes/?gid=%s&station=%s&month=%s&year=%s&language=portuguesebr&country=brazil') %
                                 (str(row_ListarCidades[0]), str(row_ListarCidades[1]), str(row_ListarCidades[2]), mes, ano))
             tree = html.fromstring(page.content)
@@ -65,16 +92,23 @@ def busca_site(cidade, mes, ano, db):
                 str(vent_const_max) + ' | ' + str(rajad_vent_max) + \
                 ' | ' + str(descricao) + '\n'
 
-            collection = (db.climas.update(
-                {"dia": str(dia),
-                 "cidade": str(cidade)},
-                {"cidade": str(cidade),
-                 "dia": str(dia),
-                 "temp_min_dia": str(temp_min_dia),
-                 "temp_max_dia": str(temp_max_dia),
-                 "vent_const_max": str(vent_const_max),
-                 "rajad_vent_max": str(rajad_vent_max),
-                 "descricao": str(descricao)}, upsert=True))
+            if db:
+                db.climas.update(
+                    {
+                        "dia": str(dia),
+                        "cidade": str(cidade)
+                    },
+                    {
+                        "cidade": str(cidade),
+                        "dia": str(dia),
+                        "temp_min_dia": str(temp_min_dia),
+                        "temp_max_dia": str(temp_max_dia),
+                        "vent_const_max": str(vent_const_max),
+                        "rajad_vent_max": str(rajad_vent_max),
+                        "descricao": str(descricao)
+                    },
+                    upsert=True
+                )
 
         Linha += 1
 
@@ -83,97 +117,79 @@ def busca_site(cidade, mes, ano, db):
 
 
 print("Digite o nome da cidade (sem caracteres especiais).")
-escolher_cidade = input('Cidade: ').lower()
-escolher_mes = input("Mes: ").lower()
-escolher_ano = input("Ano: ")
+city = input('Cidade: ').lower()
+month = input("Mes: ").lower()
+year = input("Ano: ")
 
-OpenCidades = open('cidade.csv')
-LerCidades = csv.reader(OpenCidades, delimiter='|')
-ListarCidades = list(LerCidades)
+cities_csv = csv.reader(open('cidade.csv'), delimiter='|')
+cities_list = list(cities_csv)
 
-conexao = pymongo.MongoClient("localhost", 27017)
-datab = conexao["MongoDB_Samuel_01"]
+try:
+    conexao = pymongo.MongoClient("localhost", 27017)
+    datab = conexao["MongoDB_Samuel_01"]
+except:
+    print('Sem banco de dados!')
 
-escolher_cidade = str.replace(escolher_cidade, ' ', '-')
+city = str.replace(city, ' ', '-')
+month = month_transform(month)
 
-if escolher_mes == 'janeiro':
-    escolher_mes = '1'
-if escolher_mes == 'fevereiro':
-    escolher_mes = '2'
-if escolher_mes == 'março':
-    escolher_mes = '3'
-if escolher_mes == 'abril':
-    escolher_mes = '4'
-if escolher_mes == 'maio':
-    escolher_mes = '5'
-if escolher_mes == 'junho':
-    escolher_mes = '6'
-if escolher_mes == 'julho':
-    escolher_mes = '7'
-if escolher_mes == 'agosto':
-    escolher_mes = '8'
-if escolher_mes == 'setembro':
-    escolher_mes = '9'
-if escolher_mes == 'outubro':
-    escolher_mes = '10'
-if escolher_mes == 'novembro':
-    escolher_mes = '11'
-if escolher_mes == 'dezembro':
-    escolher_mes = '12'
-
-if (str(escolher_mes) == 'todos') and (str(escolher_ano) != 'todos'):
+if (str(month) == 'todos') and (str(year) != 'todos'):
     print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
     Novo = open('HIST_TODOS_ANO%s_%s.csv' %
-                (escolher_ano, escolher_cidade), 'w')
+                (year, city), 'w')
     Novo.write(
         "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao\n\n")
-    escolher_mes = 1
+    month = 1
     Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s, NO MES %d\n\n' %
-               (escolher_cidade, escolher_mes))
+               (city, month))
 
-    while escolher_mes < 13:
-        mes_a_mes = busca_site(
-            escolher_cidade, escolher_mes, escolher_ano, datab)
-        escolher_mes += 1
+    while month < 13:
+        if datab:
+            mes_a_mes = busca_site(
+                city, month, year, datab)
+        else:
+            mes_a_mes = busca_site(
+                city, month, year)
+        month += 1
         Novo.write(mes_a_mes)
     Novo.close()
 
-if (str(escolher_mes) != 'todos') and (str(escolher_ano) == 'todos'):
+if (str(month) != 'todos') and (str(year) == 'todos'):
     print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
     Novo = open('HIST_MES%s_TODOS_%s.csv' %
-                (escolher_mes, escolher_cidade), 'w')
+                (month, city), 'w')
     Novo.write(
         "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao\n\n")
-    escolher_ano = 2015
-    Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % escolher_cidade)
+    year = 2015
+    Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % city)
 
-    while escolher_ano < 2018:
+    while year < 2018:
         mes_a_mes = busca_site(
-            escolher_cidade, escolher_mes, escolher_ano, datab)
+            city, month, year, datab)
         Novo.write(mes_a_mes)
-        escolher_ano += 1
+        year += 1
     Novo.close()
 
-if (str(escolher_mes) == 'todos') and (str(escolher_ano) == 'todos'):
+if (str(month) == 'todos') and (str(year) == 'todos'):
     print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
-    Novo = open('HIST_GERAL_%s.csv' % escolher_cidade, 'w')
+    Novo = open('HIST_GERAL_%s.csv' % city, 'w')
     Novo.write(
         "Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao\n\n")
-    escolher_mes = 1
-    escolher_ano = 2015
-    Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % escolher_cidade)
+    month = 1
+    year = 2015
+    Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % city)
 
-    while escolher_ano < 2018:
-        while escolher_mes < 13:
+    while year < 2018:
+        while month < 13:
             mes_a_mes = busca_site(
-                escolher_cidade, escolher_mes, escolher_ano, datab)
-            escolher_mes += 1
+                city, month, year, datab)
+            month += 1
             Novo.write(mes_a_mes)
-        escolher_ano += 1
-        escolher_mes = 1
+        year += 1
+        month = 1
     Novo.close()
 
-if (str(escolher_mes) != 'todos') and (str(escolher_ano) != 'todos'):
+if (str(month) != 'todos') and (str(year) != 'todos'):
     print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
     resultado_comum = busca_site(
-        escolher_cidade, escolher_mes, escolher_ano, datab)
+        city, month, year, datab)
