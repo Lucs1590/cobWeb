@@ -1,11 +1,5 @@
-#encoding: utf-8
-#encoding: iso-8859-1
-#encoding: win-1252
-################################################################ IMPORT ##############################################################################
 from lxml import html
 import requests
-import csv
-import sys
 import pymongo
 
 ####################################################### DECLARACAO DE VARIAVEIS #######################################################################
@@ -148,7 +142,7 @@ while Linha <= 1400:
 	                "observacao" : str(obs)}, upsert = True))
 
 
-		print str(tudo)
+		print(str(tudo))
 		Novo.write(str(tudo))
 		break
 	else:

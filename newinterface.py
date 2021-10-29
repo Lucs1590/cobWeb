@@ -1,13 +1,9 @@
-#!/usr/bin/python 
 from __future__ import print_function 
-import numpy as np 
-import sys 
 import os 
-import Tkinter 
-import tkMessageBox 
+import Tkinter
 import Image
 import ttk 
-from Tkinter import Tk, Frame, Canvas, Label 
+from Tkinter import Canvas
 import ImageTk 
 top=Tkinter.Tk() 
  

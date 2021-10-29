@@ -5,8 +5,6 @@
 ################################################################ IMPORT ##############################################################################
 from lxml import html
 import requests
-import csv
-import sys
 import pymongo
 
 ####################################################### DECLARACAO DE VARIAVEIS #######################################################################
@@ -96,7 +94,7 @@ while Linha < 6300:
                                 "controle" : str(n_controle)},
                                 upsert = True))
 
-			print str(cab) + str(inf) + str(space)
+			print(str(cab) + str(inf) + str(space))
 			Linha += 1
 			a += 1
 
