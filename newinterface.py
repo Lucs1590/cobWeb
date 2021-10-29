@@ -36,9 +36,9 @@ def quit():
 
 
 # Imagem
-img = Image.open("abc1.png")
-img2 = Image.open("abc2.png")
-img3 = Image.open("daninha.png")
+img = Image.open("img/weather.png")
+img2 = Image.open("img/bug.png")
+img3 = Image.open("img/plant.png")
 img = img.resize((300, 300), Image.ANTIALIAS)
 img2 = img2.resize((300, 300), Image.ANTIALIAS)
 img3 = img3.resize((300, 300), Image.ANTIALIAS)
