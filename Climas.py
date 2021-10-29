@@ -32,7 +32,7 @@ def month_transform(month):
 def year_transform(year):
     try:
         year = int(year)
-    except:
+    except ValueError:
         pass
     return year
 
@@ -42,8 +42,8 @@ def get_connection():
         connection = pymongo.MongoClient(
             "localhost", 27017, serverSelectionTimeoutMS=3000)
         db = connection["MongoDB_Samuel_01"]
-        db.server_info()
-    except:
+        connection.server_info()
+    except Exception:
         print('Sem banco de dados!')
         db = None
 
