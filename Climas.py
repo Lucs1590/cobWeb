@@ -5,18 +5,7 @@ import csv
 
 def main():
     (city, month, year) = get_info()
-
-    cities_csv = csv.reader(open('cidade.csv'), delimiter='|')
-    cities_list = list(cities_csv)
-
-    try:
-        conexao = pymongo.MongoClient("localhost", 27017)
-        datab = conexao["MongoDB_Samuel_01"]
-    except:
-        print('Sem banco de dados!')
-
-    city = str.replace(city, ' ', '-')
-    month = month_transform(month)
+    database = get_connection()
 
     if (str(month) == 'todos') and (str(year) != 'todos'):
         print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
@@ -29,9 +18,9 @@ def main():
                    (city, month))
 
         while month < 13:
-            if datab:
+            if database:
                 mes_a_mes = busca_site(
-                    city, month, year, datab)
+                    city, month, year, database)
             else:
                 mes_a_mes = busca_site(
                     city, month, year)
@@ -50,7 +39,7 @@ def main():
 
         while year < 2018:
             mes_a_mes = busca_site(
-                city, month, year, datab)
+                city, month, year, database)
             Novo.write(mes_a_mes)
             year += 1
         Novo.close()
@@ -67,7 +56,7 @@ def main():
         while year < 2018:
             while month < 13:
                 mes_a_mes = busca_site(
-                    city, month, year, datab)
+                    city, month, year, database)
                 month += 1
                 Novo.write(mes_a_mes)
             year += 1
@@ -77,13 +66,13 @@ def main():
     if (str(month) != 'todos') and (str(year) != 'todos'):
         print("Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max. | Corrente de Vento Max. | Descricao")
         resultado_comum = busca_site(
-            city, month, year, datab)
+            city, month, year, database)
 
 
 def get_info():
     print("Digite o nome da cidade (sem caracteres especiais).")
-    city = input('Cidade: ').lower()
-    month = input("Mes: ").lower()
+    city = input('Cidade: ').lower().replace(' ', '-')
+    month = month_transform(input("Mes: ").lower())
     year = input("Ano: ")
     return (city, month, year)
 
@@ -97,6 +86,16 @@ def month_transform(month):
         month = months_list.index(
             month) + 1 if month in months_list else 'todos'
     return month
+
+
+def get_connection():
+    try:
+        connection = pymongo.MongoClient("localhost", 27017)
+        datab = connection["MongoDB_Samuel_01"]
+    except:
+        print('Sem banco de dados!')
+
+    return datab if datab else None
 
 
 def busca_site(cidade, mes, ano, db=''):
