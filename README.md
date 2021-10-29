@@ -1,4 +1,5 @@
 # CobWeb
+[![Python Package using Conda](https://github.com/Lucs1590/CobWeb/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/Lucs1590/CobWeb/actions/workflows/python-package-conda.yml)
 
 This is a work carried out for the collection of climatic data, as well as data on bugs and diseases that affect crops in agriculture.
 
