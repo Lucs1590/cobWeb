@@ -34,7 +34,7 @@ def year_transform(year):
     try:
         year = int(year)
     except:
-        ...
+        pass
     return year
 
 
@@ -112,7 +112,7 @@ def get_data(city, month, year, database=None):
 
 
 def write_csv(file, message):
-    ...
+    pass
 
 
 def busca_site(city, month, year, cities_list, db=None):
@@ -141,7 +141,7 @@ def busca_site(city, month, year, cities_list, db=None):
             'id("monthly-archive")/div[3]/div/table/tbody/tr[%d]/td[10]/text()' % i)
 
         if len(dia) == 0:
-            dia == '--/--/----'
+            dia == '--'
 
         if len(temp_min_dia) == 0:
             temp_min_dia = '--ºC'
@@ -156,11 +156,11 @@ def busca_site(city, month, year, cities_list, db=None):
             rajad_vent_max = '-- Km/h'
 
         if len(descricao) == 0:
-            descricao = '--'
+            descricao = '-'
 
-        aux += ' '.join(dia) + ' | ' + ' '.join(temp_min_dia) + ' | ' + ' '.join(temp_max_dia) + ' | ' + \
-            ' '.join(vent_const_max) + ' | ' + ' '.join(rajad_vent_max) + \
-            ' | ' + ', '.join(descricao) + ' \n'
+        aux += ''.join(dia) + ' | ' + ''.join(temp_min_dia) + ' | ' + ''.join(temp_max_dia) + ' | ' + \
+            ''.join(vent_const_max) + ' | ' + ''.join(rajad_vent_max) + \
+            ' | ' + ','.join(descricao) + ' \n'
 
         if db:
             db.climas.update_one(
@@ -171,10 +171,10 @@ def busca_site(city, month, year, cities_list, db=None):
                 {
                     "cidade": str(city),
                     "dia": str(dia),
-                    "temp_min_dia": ' '.join(temp_min_dia),
-                    "temp_max_dia": ' '.join(temp_max_dia),
-                    "vent_const_max": ' '.join(vent_const_max),
-                    "rajad_vent_max": ' '.join(rajad_vent_max),
+                    "temp_min_dia": ''.join(temp_min_dia),
+                    "temp_max_dia": ''.join(temp_max_dia),
+                    "vent_const_max": ''.join(vent_const_max),
+                    "rajad_vent_max": ''.join(rajad_vent_max),
                     "descricao": ', '.join(descricao)
                 },
                 upsert=True
