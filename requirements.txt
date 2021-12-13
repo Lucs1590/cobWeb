@@ -1,4 +1,4 @@
 image==1.5.33
-lxml==4.6.4
+lxml==4.6.5
 pymongo==4.0
 requests==2.26.0
