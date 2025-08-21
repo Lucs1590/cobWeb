@@ -1,4 +1,5 @@
 import logging
+import argparse
 from typing import Dict, Optional
 
 import requests
@@ -12,11 +13,54 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def parse_arguments() -> Optional[argparse.Namespace]:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description='Search for weed plant data by scientific name.'
+    )
+    parser.add_argument(
+        '--plant-name',
+        type=str,
+        help='Scientific name of the weed plant'
+    )
+    parser.add_argument(
+        '--start-line',
+        type=int,
+        default=977,
+        help='Starting line number for search (default: 977)'
+    )
+    parser.add_argument(
+        '--end-line',
+        type=int,
+        default=1400,
+        help='Ending line number for search (default: 1400)'
+    )
+    
+    args = parser.parse_args()
+    
+    # If plant-name is provided via command line, use command-line mode
+    if args.plant_name:
+        return args
+    
+    return None
+
+
 def main():
-    # Get user input
-    plant_name = input(
-        'Digite o nome cientifico da planta-daninha\n'
-    ).lower().capitalize()
+    # Check for command-line arguments first
+    args = parse_arguments()
+    
+    if args:
+        # Use command-line arguments
+        plant_name = args.plant_name.lower().capitalize()
+        start_line = args.start_line
+        end_line = args.end_line
+    else:
+        # Fall back to interactive input
+        plant_name = input(
+            'Digite o nome cientifico da planta-daninha\n'
+        ).lower().capitalize()
+        start_line = 977
+        end_line = 1400
 
     char_mapping = create_character_mapping()
     normalized_plant_name = normalize_plant_name(plant_name, char_mapping)
@@ -30,9 +74,6 @@ def main():
         return
 
     output_filename = f'PRAGAS COBWEB - Planta-Daninha({plant_name}).csv'
-
-    start_line = 977
-    end_line = 1400
 
     for linha in range(start_line, end_line + 1):
         tree = fetch_plant_page(linha)

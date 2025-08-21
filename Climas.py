@@ -1,6 +1,7 @@
 import os
 import csv
 import logging
+import argparse
 from datetime import datetime
 from typing import List, Tuple, Optional, Dict
 
@@ -31,10 +32,56 @@ MAX_MONTH = 12
 MAX_DAY = 31
 
 
+def parse_arguments() -> Optional[argparse.Namespace]:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description='Scrape weather data for a specific city, month, and year.'
+    )
+    parser.add_argument(
+        '--city',
+        type=str,
+        help='City name (without special characters)'
+    )
+    parser.add_argument(
+        '--month',
+        type=str,
+        help='Month (number, name, or "todos")'
+    )
+    parser.add_argument(
+        '--year',
+        type=str,
+        help='Year (number or "todos")'
+    )
+    
+    args = parser.parse_args()
+    
+    # If any arguments are provided, all must be provided
+    if any([args.city, args.month, args.year]):
+        if not all([args.city, args.month, args.year]):
+            parser.error("If using command-line arguments, --city, --month, and --year are all required")
+        return args
+    
+    return None
+
+
 def main() -> None:
     """Main function to orchestrate the weather data scraping process."""
     try:
-        city, month, year = get_user_input()
+        # Check for command-line arguments first
+        args = parse_arguments()
+        
+        if args:
+            # Use command-line arguments
+            city = args.city.lower().replace(' ', '-').strip()
+            if not city:
+                raise ValueError("Nome da cidade não pode estar vazio")
+            
+            month = parse_month(args.month.lower().strip())
+            year = parse_year(args.year.strip())
+        else:
+            # Fall back to interactive input
+            city, month, year = get_user_input()
+        
         database = connect_to_database()
         cities_list = load_cities_data()
 
