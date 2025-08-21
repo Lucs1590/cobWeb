@@ -1,120 +1,360 @@
-#encoding: utf-8
-#encoding: iso-8859-9
-#encoding: win-1252
-
-################################################################ IMPORT ##############################################################################
+import argparse
+import logging
 from lxml import html
-import requests
+from datetime import datetime
+from typing import Dict, Optional, Tuple
+
 import pymongo
+import requests
 
-####################################################### DECLARACAO DE VARIAVEIS #######################################################################
-a = 0
-Linha = 2417
-nome_cien = []
-desc = []
-sintoma = []
-bioecologia = []
-controle = []
-tiposite = ""
-culturasite = ""
-#especiais = [['ã','\\xe3'], ['á','\\xe1'], ['â','\\xe2'], ['ç','\\xe7'], ['é','\\xe9'], ['ê','\\xea'], ['í','\\xed'], ['ó','\\xf3'], ['ô','\\xf4'], ['ú','\\xfa']]
-especiais01 = [['\\xc0', 'À'], ['\\xc1', 'Á'],	['\\xc2', 'Â'],	['\\xc3', 'Ã'],	['\\xc4', 'Ä'],	['\\xc7', 'Ç'],	['\\xc8', 'È'],	['\\xc9', 'É'],	['\\xca', 'Ê'],	['\\xcb', 'Ë'],	['\\xcc', 'Ì'],	['\\xcd', 'Í'],	['\\xce', 'Î'],	['\\xcf', 'Ï'],	['\\xd1', 'Ñ'],	['\\xd2', 'Ò'],	['\\xd3', 'Ó'],	['\\xd4', 'Ô'],	['\\xd5', 'Õ'],	['\\xd6', 'Ö'],	['\\xd9', 'Ù'],	['\\xda', 'Ú'],	['\\xdb', 'Û'],	[
-    '\\xdc', 'Ü'],	['\xe0', 'à'],	['\\xe2', 'â'],	['\\xe3', 'ã'],	['\xe4', 'ä'],	['\\xe7', 'ç'],	['\\xe8', 'è'],	['\\xe9', 'é'],	['\\xea', 'ê'],	['\\xeb', 'ë'],	['\\xec', 'ì'],	['\\xed', 'í'],	['\\xee', 'î'],	['\\xef', 'ï'],	['\\xf1', 'ñ'],	['\\xf2', 'ò'],	['\\xf3', 'ó'],	['\\xf4', 'ô'],	['\\xf5', 'õ'],	['\\xf6', 'ö'],	['\\xf9', 'ù'],	['\\xfa', 'ú'],	['\\xfb', 'û'],	['\\xfc', 'ü'],	['\\xfd', 'ÿ']]
-####################################################### DESENVOLVIMENTO ###############################################################################
-# http://agrofit.agricultura.gov.br/agrofit_cons/!ap_praga_detalhe_cons?p_id_cultura_praga=2417		Min registro
-# http://agrofit.agricultura.gov.br/agrofit_cons/!ap_praga_detalhe_cons?p_id_cultura_praga=6264		Max registro
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-# --------------------------------------------------------INTERACAO-------------------------------------------------------------------------------------
+DB_NAME = "MongoDB_Samuel_01"
+COLLECTION_NAME = "pragas"
+BASE_URL = "http://agrofit.agricultura.gov.br/agrofit_cons/!ap_praga_detalhe_cons"
+MIN_RECORD = 2417
+MAX_RECORD = 6264
 
-tipo = str(input('Tipo (Inseto ou Doença): ').lower().capitalize())
-cultura = str(input('Cultura: ').lower().capitalize())
-n_cultura = str(cultura)
-
-for x in especiais01:
-    if x[1] in cultura:
-        n_cultura = str.replace(n_cultura, x[1], str(x[0]))
+VALID_TYPES = ['inseto', 'doença']
 
 
-conexao = pymongo.MongoClient("localhost", 27017)
-db = conexao["MongoDB_Samuel_01"]
+def main() -> None:
+    """Main function to orchestrate the pest data scraping process."""
 
-Novo = open('PRAGAS COBWEB - %s(%s).csv' % (tipo, cultura), 'w')
-# ---------------------------------------------------------CRAWLER----------------------------------------------------------------------------------------
-while Linha < 6300:
-    page = requests.get(str(
-        'http://agrofit.agricultura.gov.br/agrofit_cons/!ap_praga_detalhe_cons?p_id_cultura_praga=%d' % Linha))
-    tree = html.fromstring(page.content)
+    args = parse_arguments()
 
-    tiposite = tree.xpath('id("N1")/table[1]/tr[1]/td[2]/input/@value')
-    culturasite = tree.xpath('id("N1")/table[1]/tr[3]/td[2]/input/@value')
-
-    # print cultura.encode('utf-8') + ":" + culturasite + ":" + str(n_cultura).encode('utf-8')
-    # print tipo + ":" + tiposite
-
-    tiposite = str(tiposite[0].strip('\n\t').encode(
-        'utf-8')) if tiposite != [] else "NÃO REGISTRADO"
-    culturasite = str(culturasite[0].strip('\n\t').encode(
-        'utf-8')) if culturasite != [] else "NÃO REGISTRADO"
-
-    print(tipo + ":" + tiposite + "| linha: " + str(Linha))
-
-    if (str(tipo) in "*"+str(tiposite)+"*"):
-        if (str(n_cultura) in "*"+str(culturasite)+"*"):
-            # TIPO QUE ESTA NO SITE    // 6 LINHAS ACIMA
-            nome_cien = tree.xpath(
-                'id("N1")/table[1]/tr[2]/td[2]/input/@value')
-            n_nome_cien = nome_cien
-            # CULTURA                  // 7 LINHAS ACIMA
-            desc = tree.xpath('id("N2")/table/tr[3]/td/textarea/text()')
-            n_desc = desc
-            sintoma = tree.xpath('id("N2")/table/tr[5]/td/textarea/text()')
-            n_sintoma = sintoma
-            bioecologia = tree.xpath('id("N2")/table/tr[7]/td/textarea/text()')
-            n_bioecologia = bioecologia
-            controle = tree.xpath('id("N2")/table/tr[9]/td/textarea/text()')
-            n_controle = controle
-# ---------------------------------------------------------------TRATAMENTO DO XPATH---------------------------------------------------------------------------
-            if (len(str(n_cultura)) > 2) or (len(str(n_nome_cien)) > 2) or (len(str(n_desc)) > 2) or (len(str(n_sintoma)) > 2) or (len(str(n_bioecologia)) > 2) or (len(str(n_controle)) > 2) or (len(str(tiposite)) > 2):
-                n_cultura = str(n_cultura[0].strip('\n\t').encode(
-                    'utf-8')) if n_cultura != [] else "NÃO REGISTRADO"
-                n_nome_cien = str(n_nome_cien[0].strip('\n\t').encode(
-                    'utf-8')) if n_nome_cien != [] else "NÃO REGISTRADO"
-                n_desc = str(n_desc[0].strip('\n\t').encode(
-                    'utf-8')) if n_desc != [] else "NÃO REGISTRADO"
-                n_sintoma = str(n_sintoma[0].strip('\n\t').encode(
-                    'utf-8')) if n_sintoma != [] else "NÃO REGISTRADO"
-                n_bioecologia = str(n_bioecologia[0].strip('\n\t').encode(
-                    'utf-8')) if n_bioecologia != [] else "NÃO REGISTRADO"
-                n_controle = str(n_controle[0].strip('\n\t').encode(
-                    'utf-8')) if n_controle != [] else "NÃO REGISTRADO"
-# ---------------------------------------------------------------ESTRUTURA E IMPRESSÃO---------------------------------------------------------------------------
-            cab = str(Linha) + ' | ' + str(tiposite) + ' | ' + \
-                str(n_nome_cien) + ' | ' + str(culturasite) + "\n\n"
-            inf = 'Descricao: ' + str(n_desc) + "\n\n" + 'Sintomas: ' + str(n_sintoma) + "\n\n" + \
-                'Bioecologia: ' + str(n_bioecologia) + "\n\n" + \
-                'Controle: ' + str(n_controle) + "\n\n"
-            space = "_____________________________________________________________________________________________________________________________________________\n"
-            Novo.write(str(cab) + str(inf) + str(space))
-
-            collection = (db.pragas.update(
-                {"tipo": str(tiposite),
-                 "cultura": str(culturasite)},
-                {"tipo": str(tiposite),
-                 "nome_cientifico": str(n_nome_cien),
-                 "cultura": str(culturasite),
-                 "descricao": str(n_desc),
-                 "sintomas": str(n_sintoma),
-                 "bioecologia": str(n_bioecologia),
-                 "controle": str(n_controle)},
-                upsert=True))
-
-            print(str(cab) + str(inf) + str(space))
-            Linha += 1
-            a += 1
-
-        else:
-            Linha += 1
+    if args:
+        pest_type = args.pest_type.lower().strip().capitalize()
+        culture = args.culture.lower().strip().capitalize()
     else:
-        Linha += 1
-print("_____________________________________________________________FINALIZADO_____________________________________________________________________")
-Novo.close()
+        pest_type, culture = get_user_input()
+
+    try:
+        char_mapping = create_character_mapping()
+        normalized_culture = normalize_culture_name(culture, char_mapping)
+        database = connect_to_database()
+
+        matches_found = scrape_pest_data(
+            pest_type,
+            culture,
+            normalized_culture,
+            database
+        )
+
+        if matches_found == 0:
+            print(
+                f"\nNenhum registro encontrado para {pest_type} em {culture}"
+            )
+            print("Verifique se o tipo e cultura estão corretos.")
+        else:
+            print(
+                f"\nProcesso concluído com sucesso! {matches_found} registros encontrados."
+            )
+
+    except ValueError as e:
+        logger.error("Input validation error: %s", e)
+        print(f"Erro de entrada: {e}")
+    except KeyboardInterrupt:
+        logger.info("Process interrupted by user")
+        print("\nProcesso interrompido pelo usuário.")
+    except Exception as e:
+        logger.error("Unexpected error: %s", e)
+        print(f"Erro inesperado: {e}")
+
+
+def parse_arguments() -> Optional[argparse.Namespace]:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description='Search for pest data by type and culture.'
+    )
+    parser.add_argument(
+        '--pest-type',
+        type=str,
+        help='The type of pest (e.g., Insect, Disease)'
+    )
+    parser.add_argument(
+        '--culture',
+        type=str,
+        help='The culture name (e.g., Corn, Soybean)'
+    )
+
+    args = parser.parse_args()
+
+    if args.pest_type and args.culture:
+        return args
+
+    return None
+
+
+def create_character_mapping() -> Dict[str, str]:
+    """Create character encoding mapping for special characters."""
+    return {
+        'À': '\\xc0', 'Á': '\\xc1', 'Â': '\\xc2', 'Ã': '\\xc3', 'Ä': '\\xc4',
+        'Ç': '\\xc7', 'È': '\\xc8', 'É': '\\xc9', 'Ê': '\\xca', 'Ë': '\\xcb',
+        'Ì': '\\xcc', 'Í': '\\xcd', 'Î': '\\xce', 'Ï': '\\xcf', 'Ñ': '\\xd1',
+        'Ò': '\\xd2', 'Ó': '\\xd3', 'Ô': '\\xd4', 'Õ': '\\xd5', 'Ö': '\\xd6',
+        'Ù': '\\xd9', 'Ú': '\\xda', 'Û': '\\xdb', 'Ü': '\\xdc', 'à': '\xe0',
+        'â': '\\xe2', 'ã': '\\xe3', 'ä': '\xe4', 'ç': '\\xe7', 'è': '\\xe8',
+        'é': '\\xe9', 'ê': '\\xea', 'ë': '\\xeb', 'ì': '\\xec', 'í': '\\xed',
+        'î': '\\xee', 'ï': '\\xef', 'ñ': '\\xf1', 'ò': '\\xf2', 'ó': '\\xf3',
+        'ô': '\\xf4', 'õ': '\\xf5', 'ö': '\\xf6', 'ù': '\\xf9', 'ú': '\\xfa',
+        'û': '\\xfb', 'ü': '\\xfc', 'ÿ': '\\xfd'
+    }
+
+
+def get_user_input() -> Tuple[str, str]:
+    """Get and validate user input for pest type and culture."""
+    pest_type = input('Tipo (Inseto ou Doença): ').lower().strip().capitalize()
+
+    if pest_type.lower() not in VALID_TYPES:
+        raise ValueError(
+            f"Tipo deve ser 'Inseto' ou 'Doença', recebido: {pest_type}")
+
+    culture = input('Cultura: ').strip().capitalize()
+
+    if not culture:
+        raise ValueError("Nome da cultura não pode estar vazio")
+
+    return pest_type, culture
+
+
+def normalize_culture_name(culture: str, char_mapping: Dict[str, str]) -> str:
+    """Normalize culture name by replacing special characters."""
+    normalized_culture = culture
+    for original_char, encoded_char in char_mapping.items():
+        if original_char in normalized_culture:
+            normalized_culture = normalized_culture.replace(
+                original_char,
+                encoded_char
+            )
+    return normalized_culture
+
+
+def connect_to_database() -> Optional[pymongo.database.Database]:
+    """Establish connection to MongoDB database."""
+    try:
+        client = pymongo.MongoClient(
+            'localhost',
+            27017,
+            serverSelectionTimeoutMS=3000
+        )
+        db = client[DB_NAME]
+
+        client.server_info()
+        logger.info("Connected to MongoDB successfully")
+        return db
+
+    except Exception as e:
+        logger.warning("Database connection failed: %s", e)
+        print('Sem banco de dados! Continuando sem salvar no banco.')
+        return None
+
+
+def fetch_pest_page(record_id: int) -> Optional[html.HtmlElement]:
+    """Fetch and parse pest page from the website."""
+    url = f"{BASE_URL}?p_id_cultura_praga={record_id}"
+
+    try:
+        response = requests.get(url, timeout=15)
+        response.raise_for_status()
+        return html.fromstring(response.content)
+
+    except requests.exceptions.RequestException as e:
+        logger.warning("Error fetching page for record %d: %s", record_id, e)
+        return None
+
+
+def extract_basic_info(tree: html.HtmlElement) -> Tuple[str, str]:
+    """Extract basic pest type and culture information."""
+    try:
+        pest_type_elements = tree.xpath(
+            'id("N1")/table[1]/tr[1]/td[2]/input/@value'
+        )
+        culture_elements = tree.xpath(
+            'id("N1")/table[1]/tr[3]/td[2]/input/@value'
+        )
+
+        pest_type = pest_type_elements[0].strip(
+        ) if pest_type_elements else "NÃO REGISTRADO"
+        culture = culture_elements[0].strip(
+        ) if culture_elements else "NÃO REGISTRADO"
+
+        return pest_type, culture
+
+    except Exception as e:
+        logger.warning("Error extracting basic info: %s", e)
+        return "NÃO REGISTRADO", "NÃO REGISTRADO"
+
+
+def extract_detailed_data(tree: html.HtmlElement) -> Dict[str, str]:
+    """Extract detailed pest/disease data from the parsed HTML tree."""
+    xpath_mappings = {
+        'nome_cientifico': 'id("N1")/table[1]/tr[2]/td[2]/input/@value',
+        'descricao': 'id("N2")/table/tr[3]/td/textarea/text()',
+        'sintomas': 'id("N2")/table/tr[5]/td/textarea/text()',
+        'bioecologia': 'id("N2")/table/tr[7]/td/textarea/text()',
+        'controle': 'id("N2")/table/tr[9]/td/textarea/text()'
+    }
+
+    extracted_data = {}
+
+    for field, xpath in xpath_mappings.items():
+        try:
+            result = tree.xpath(xpath)
+            if result and result[0].strip():
+                extracted_data[field] = result[0].strip()
+            else:
+                extracted_data[field] = "NÃO REGISTRADO"
+        except Exception as e:
+            logger.warning("Error extracting %s: %s", field, e)
+            extracted_data[field] = "NÃO REGISTRADO"
+
+    return extracted_data
+
+
+def format_pest_info(record_id: int, pest_type: str, culture: str, data: Dict[str, str]) -> str:
+    """Format pest data into readable text."""
+    header = f"{record_id} | {pest_type} | {data['nome_cientifico']} | {culture}\n\n"
+
+    details = (f"Descricao: {data['descricao']}\n\n"
+               f"Sintomas: {data['sintomas']}\n\n"
+               f"Bioecologia: {data['bioecologia']}\n\n"
+               f"Controle: {data['controle']}\n\n")
+
+    separator = "_" * 141 + "\n"
+
+    return header + details + separator
+
+
+def save_to_database(database: pymongo.database.Database, pest_type: str, culture: str,
+                     data: Dict[str, str], record_id: int) -> None:
+    """Save pest data to MongoDB."""
+    try:
+        document = {
+            'record_id': record_id,
+            'tipo': pest_type,
+            'nome_cientifico': data['nome_cientifico'],
+            'cultura': culture,
+            'descricao': data['descricao'],
+            'sintomas': data['sintomas'],
+            'bioecologia': data['bioecologia'],
+            'controle': data['controle'],
+            'data_coleta': datetime.now()
+        }
+
+        database[COLLECTION_NAME].update_one(
+            {
+                'tipo': pest_type,
+                'cultura': culture,
+                'nome_cientifico': data['nome_cientifico']
+            },
+            {'$set': document},
+            upsert=True
+        )
+
+        logger.debug("Data saved to MongoDB for record %d", record_id)
+
+    except Exception as e:
+        logger.error("Error saving to database: %s", e)
+
+
+def has_meaningful_data(data: Dict[str, str]) -> bool:
+    """Check if the extracted data contains meaningful information."""
+    non_empty_fields = [
+        value for value in data.values()
+        if value != "NÃO REGISTRADO" and value.strip()
+    ]
+    return len(non_empty_fields) >= 2  # Require at least 2 fields with data
+
+
+def scrape_pest_data(
+    target_type: str,
+    target_culture: str,
+    normalized_culture: str,
+    database: Optional[pymongo.database.Database] = None
+) -> int:
+    """Main scraping function that processes pest/disease data."""
+    filename = f'PRAGAS COBWEB - {target_type}({target_culture}).csv'
+    matches_found = 0
+
+    try:
+        with open(filename, 'w', encoding='utf-8') as output_file:
+            logger.info(
+                "Starting search for %s in %s",
+                target_type,
+                target_culture
+            )
+            logger.info(
+                "Searching records from %d to %d",
+                MIN_RECORD,
+                MAX_RECORD
+            )
+
+            for record_id in range(MIN_RECORD, MAX_RECORD + 1):
+                tree = fetch_pest_page(record_id)
+                if tree is None:
+                    continue
+
+                site_pest_type, site_culture = extract_basic_info(tree)
+
+                if record_id % 100 == 0:
+                    logger.info("Processing record %d...", record_id)
+
+                print(f"{target_type}:{site_pest_type} | linha: {record_id}")
+
+                if (target_type.lower() in site_pest_type.lower() and
+                        normalized_culture.lower() in site_culture.lower()):
+
+                    logger.info("Match found at record %d", record_id)
+
+                    detailed_data = extract_detailed_data(tree)
+
+                    if not has_meaningful_data(detailed_data):
+                        logger.warning(
+                            "Insufficient data for record %d, skipping",
+                            record_id
+                        )
+                        continue
+
+                    formatted_info = format_pest_info(
+                        record_id,
+                        site_pest_type,
+                        site_culture,
+                        detailed_data
+                    )
+
+                    output_file.write(formatted_info)
+                    output_file.flush()
+
+                    if database:
+                        save_to_database(
+                            database,
+                            site_pest_type,
+                            site_culture,
+                            detailed_data,
+                            record_id
+                        )
+
+                    print(formatted_info)
+
+                    matches_found += 1
+
+            logger.info("Search completed. Found %d matches", matches_found)
+            print(
+                f"\nBusca finalizada. Encontrados {matches_found} registros."
+            )
+            print("_" * 125 + "FINALIZADO" + "_" * 125)
+
+    except Exception as e:
+        logger.error("Error during scraping process: %s", e)
+        raise
+
+    return matches_found
+
+
+if __name__ == '__main__':
+    main()
