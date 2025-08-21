@@ -52,36 +52,33 @@ def parse_arguments() -> Optional[argparse.Namespace]:
         type=str,
         help='Year (number or "todos")'
     )
-    
+
     args = parser.parse_args()
-    
-    # If any arguments are provided, all must be provided
+
     if any([args.city, args.month, args.year]):
         if not all([args.city, args.month, args.year]):
-            parser.error("If using command-line arguments, --city, --month, and --year are all required")
+            parser.error(
+                "If using command-line arguments, --city, --month, and --year are all required")
         return args
-    
+
     return None
 
 
 def main() -> None:
     """Main function to orchestrate the weather data scraping process."""
     try:
-        # Check for command-line arguments first
         args = parse_arguments()
-        
+
         if args:
-            # Use command-line arguments
             city = args.city.lower().replace(' ', '-').strip()
             if not city:
                 raise ValueError("Nome da cidade não pode estar vazio")
-            
+
             month = parse_month(args.month.lower().strip())
             year = parse_year(args.year.strip())
         else:
-            # Fall back to interactive input
             city, month, year = get_user_input()
-        
+
         database = connect_to_database()
         cities_list = load_cities_data()
 
@@ -193,8 +190,9 @@ def find_city_data(city_name: str, cities_list: List[List[str]]) -> List[str]:
         city_data for city_data in cities_list if city_data[0] == city_name]
 
     if not matching_cities:
-        available_cities = [city[0]
-                            for city in cities_list[:10]]  # Show first 10
+        available_cities = [
+            city[0] for city in cities_list[:10]
+        ]
         raise ValueError(f"Cidade '{city_name}' não encontrada. "
                          f"Cidades disponíveis (primeiras 10): {', '.join(available_cities)}")
 
@@ -286,7 +284,6 @@ def process_month_data(city: str, month: int, year: int, cities_list: List[List[
 
         month_data.append(csv_line)
 
-        # Save to database if available
         if database:
             save_to_database(database, city, daily_data, month, year)
 
@@ -369,20 +366,17 @@ def process_weather_data(city: str, month, year, cities_list: List[List[str]],
     """Process weather data based on the specified parameters."""
     print(CSV_HEADER)
 
-    # Single month and year - no file output, just console
     if str(month) != 'todos' and str(year) != 'todos':
         result = process_month_data(city, month, year, cities_list, database)
         print(result)
         return
 
-    # Multiple months/years - write to file
     filename = generate_filename(city, month, year)
 
     try:
         with open(filename, 'w', encoding='utf-8') as output_file:
             write_file_header(output_file, city, month, year)
 
-            # Determine ranges
             years_range = [year] if str(
                 year) != 'todos' else range(MIN_YEAR, MAX_YEAR + 1)
             months_range = [month] if str(

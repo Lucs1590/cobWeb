@@ -35,27 +35,23 @@ def parse_arguments() -> Optional[argparse.Namespace]:
         default=1400,
         help='Ending line number for search (default: 1400)'
     )
-    
+
     args = parser.parse_args()
-    
-    # If plant-name is provided via command line, use command-line mode
+
     if args.plant_name:
         return args
-    
+
     return None
 
 
 def main():
-    # Check for command-line arguments first
     args = parse_arguments()
-    
+
     if args:
-        # Use command-line arguments
         plant_name = args.plant_name.lower().capitalize()
         start_line = args.start_line
         end_line = args.end_line
     else:
-        # Fall back to interactive input
         plant_name = input(
             'Digite o nome cientifico da planta-daninha\n'
         ).lower().capitalize()
