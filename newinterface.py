@@ -2,8 +2,7 @@ import os
 import tkinter
 from tkinter import Canvas
 
-import Image
-import ImageTk
+from PIL import Image, ImageTk
 
 TOP = tkinter.Tk()
 
@@ -39,9 +38,9 @@ def quit():
 img = Image.open("img/weather.png")
 img2 = Image.open("img/bug.png")
 img3 = Image.open("img/plant.png")
-img = img.resize((300, 300), Image.ANTIALIAS)
-img2 = img2.resize((300, 300), Image.ANTIALIAS)
-img3 = img3.resize((300, 300), Image.ANTIALIAS)
+img = img.resize((300, 300), Image.LANCZOS)
+img2 = img2.resize((300, 300), Image.LANCZOS)
+img3 = img3.resize((300, 300), Image.LANCZOS)
 photoimage = ImageTk.PhotoImage(img)
 photoimage2 = ImageTk.PhotoImage(img2)
 photoimage3 = ImageTk.PhotoImage(img3)
@@ -50,7 +49,7 @@ canvas.create_image(150, 150, image=photoimage)
 canvas3.create_image(150, 150, image=photoimage3)
 
 # Botao
-LabelF = tkinter.ttk.Label(TOP, text="CobWeb", font=("Arial", 16))
+LabelF = tkinter.Label(TOP, text="CobWeb", font=("Arial", 16))
 LabelF.configure(background="white")
 Exit = tkinter.Button(TOP, font=("Century", 12), text="Sair", command=quit)
 Exit.configure(background="black", foreground="white")
