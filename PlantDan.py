@@ -1,11 +1,14 @@
-from lxml import html
+import logging
+from typing import Dict, Optional
+
 import requests
 import pymongo
-from typing import Dict, Optional
-import logging
+from lxml import html
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 
