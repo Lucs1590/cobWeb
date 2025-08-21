@@ -55,14 +55,26 @@ LabelF = ttk.Label(TOP, text="CobWeb", font=("Arial", 16))
 LabelF.configure(background="white")
 Exit = tkinter.Button(TOP, font=("Century", 12), text="Sair", command=quit)
 Exit.configure(background="black", foreground="white")
-Erosion = tkinter.Button(TOP, font=("Century", 12),
-                         text="Clima", command=Clima)
+Erosion = tkinter.Button(
+    TOP,
+    font=("Century", 12),
+    text="Clima",
+    command=Clima
+)
 Erosion.configure(background="black", foreground="white")
-erva = tkinter.Button(TOP, font=("Century", 12),
-                      text="Plantas Daninhas", command=Plantas)
+erva = tkinter.Button(
+    TOP,
+    font=("Century", 12),
+    text="Plantas Daninhas",
+    command=Plantas
+)
 erva.configure(background="black", foreground="white")
-Nivel = tkinter.Button(TOP, font=("Century", 12),
-                       text="Pragas", command=Pragas)
+Nivel = tkinter.Button(
+    TOP,
+    font=("Century", 12),
+    text="Pragas",
+    command=Pragas
+)
 Nivel.configure(background="black", foreground="white")
 LabelF.place(relx=0.5, rely=0, anchor="n")
 Nivel.place(relx=0.44, rely=0.15, anchor="w")
