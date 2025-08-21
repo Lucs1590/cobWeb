@@ -179,7 +179,7 @@ def fetch_plant_page(linha: int) -> Optional[html.HtmlElement]:
     url = f"{BASE_URL}{linha}"
 
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, timeout=15)
         response.raise_for_status()
         return html.fromstring(response.content)
     except requests.exceptions.RequestException as e:
