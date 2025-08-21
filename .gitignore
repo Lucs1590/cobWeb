@@ -144,4 +144,9 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# CobWeb output files
+PRAGAS COBWEB - *.csv
+CLIMAS COBWEB - *.csv
+PLANTDAN COBWEB - *.csv
+
 # End of https://www.toptal.com/developers/gitignore/api/python
