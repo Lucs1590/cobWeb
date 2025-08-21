@@ -1,21 +1,23 @@
 import os
 import tkinter
-import Image
-import ttk
 from tkinter import Canvas
-import ImageTk
-top = tkinter.Tk()
 
-top.title('CobWeb.exe')
+import ttk
+import Image
+import ImageTk
+
+TOP = tkinter.Tk()
+
+TOP.title('CobWeb.exe')
 # Arquitetura
-top.geometry("600x400")
-top.configure(background="white")
+TOP.geometry("600x400")
+TOP.configure(background="white")
 
 
 # Funcao
-canvas = Canvas(top, bg="black", width=200, height=200)
-canvas2 = Canvas(top, bg="black", width=200, height=200)
-canvas3 = Canvas(top, bg="black", width=200, height=200)
+canvas = Canvas(TOP, bg="black", width=200, height=200)
+canvas2 = Canvas(TOP, bg="black", width=200, height=200)
+canvas3 = Canvas(TOP, bg="black", width=200, height=200)
 
 
 def Clima():
@@ -31,8 +33,7 @@ def Plantas():
 
 
 def quit():
-    global top
-    top.quit()
+    TOP.quit()
 
 
 # Imagem
@@ -50,17 +51,17 @@ canvas.create_image(150, 150, image=photoimage)
 canvas3.create_image(150, 150, image=photoimage3)
 
 # Botao
-LabelF = ttk.Label(top, text="CobWeb", font=("Arial", 16))
+LabelF = ttk.Label(TOP, text="CobWeb", font=("Arial", 16))
 LabelF.configure(background="white")
-Exit = tkinter.Button(top, font=("Century", 12), text="Sair", command=quit)
+Exit = tkinter.Button(TOP, font=("Century", 12), text="Sair", command=quit)
 Exit.configure(background="black", foreground="white")
-Erosion = tkinter.Button(top, font=("Century", 12),
+Erosion = tkinter.Button(TOP, font=("Century", 12),
                          text="Clima", command=Clima)
 Erosion.configure(background="black", foreground="white")
-erva = tkinter.Button(top, font=("Century", 12),
+erva = tkinter.Button(TOP, font=("Century", 12),
                       text="Plantas Daninhas", command=Plantas)
 erva.configure(background="black", foreground="white")
-Nivel = tkinter.Button(top, font=("Century", 12),
+Nivel = tkinter.Button(TOP, font=("Century", 12),
                        text="Pragas", command=Pragas)
 Nivel.configure(background="black", foreground="white")
 LabelF.place(relx=0.5, rely=0, anchor="n")
@@ -71,4 +72,4 @@ canvas2.place(relx=0.34, rely=0.5, anchor="w")
 canvas3.place(relx=0.67, rely=0.5, anchor="w")
 erva.place(relx=0.98, rely=0.15, anchor="e")
 Exit.place(relx=0.5, rely=1, anchor="s")
-top.mainloop()
+TOP.mainloop()
