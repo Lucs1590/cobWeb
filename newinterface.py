@@ -1,84 +1,140 @@
-import os
+import sys
+import subprocess
+
 import tkinter as tk
+from tkinter import font as tkfont
 from PIL import Image, ImageTk
 
 
-def run_script(script):
-    os.system(f'python {script}')
+class CobwebApp(tk.Tk):
+    """
+    An object-oriented Tkinter application for launching agricultural analysis scripts.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.title("CobWeb")
+        self.geometry("750x450")
+        self.configure(background="#f0f0f0")
+
+        self.minsize(600, 400)
+
+        self.BG_COLOR = "#f0f0f0"
+        self.BUTTON_BG = "#2c3e50"
+        self.BUTTON_FG = "#ecf0f1"
+        self.TITLE_FONT = tkfont.Font(family="Arial", size=24, weight="bold")
+        self.BUTTON_FONT = tkfont.Font(family="Century Gothic", size=12)
+
+        self.image_references = []
+
+        self._create_widgets()
+        self._center_window()
+
+    def _center_window(self):
+        """Centers the main window on the screen."""
+        self.update_idletasks()
+        width = self.winfo_width()
+        height = self.winfo_height()
+        x = (self.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.winfo_screenheight() // 2) - (height // 2)
+        self.geometry(f'{width}x{height}+{x}+{y}')
+
+    def _create_widgets(self):
+        """Creates and lays out all the widgets in the application."""
+
+        title_label = tk.Label(
+            self,
+            text="CobWeb",
+            font=self.TITLE_FONT,
+            bg=self.BG_COLOR
+        )
+        title_label.pack(pady=(20, 15))
+
+        content_frame = tk.Frame(self, bg=self.BG_COLOR)
+        content_frame.pack(expand=True, fill="both", padx=20, pady=10)
+
+        buttons_data = [
+            {"img": "img/weather.png", "text": "Clima", "script": "Climas.py"},
+            {"img": "img/bug.png", "text": "Pragas", "script": "Pragas.py"},
+            {"img": "img/plant.png", "text": "Plantas Daninhas", "script": "PlantDan.py"}
+        ]
+
+        for i in range(len(buttons_data)):
+            content_frame.grid_columnconfigure(i, weight=1)
+
+        for index, data in enumerate(buttons_data):
+            self._create_image_button(
+                parent=content_frame,
+                img_path=data["img"],
+                text=data["text"],
+                script=data["script"]
+            ).grid(row=0, column=index, padx=15, pady=10, sticky="n")
+
+        exit_button = tk.Button(
+            self,
+            text="Sair",
+            font=self.BUTTON_FONT,
+            bg=self.BUTTON_BG,
+            fg=self.BUTTON_FG,
+            width=15,
+            command=self.destroy
+        )
+        exit_button.pack(pady=20)
+
+    def _create_image_button(self, parent, img_path, text, script):
+        """Creates a frame containing an image label and a corresponding button."""
+        frame = tk.Frame(parent, bg=self.BG_COLOR)
+
+        try:
+
+            img = Image.open(img_path).resize(
+                (120, 120),
+                Image.Resampling.LANCZOS
+            )
+            photo = ImageTk.PhotoImage(img)
+            self.image_references.append(photo)
+
+            img_label = tk.Label(frame, image=photo, bg=self.BG_COLOR)
+            img_label.pack(pady=(10, 5))
+
+        except FileNotFoundError:
+
+            placeholder = tk.Label(
+                frame, text=f"Imagem\n '{img_path}'\n não encontrada",
+                font=(self.BUTTON_FONT.cget("family"), 9),
+                bg="#cccccc", fg="black", width=16, height=7
+            )
+            placeholder.pack(pady=(10, 5))
+            print(f"Warning: Image file not found at '{img_path}'")
+
+        button = tk.Button(
+            frame,
+            text=text,
+            font=self.BUTTON_FONT,
+            bg=self.BUTTON_BG,
+            fg=self.BUTTON_FG,
+            command=lambda s=script: self._run_script(
+                s
+            ),
+            width=18
+        )
+        button.pack(pady=(0, 10))
+
+        return frame
+
+    def _run_script(self, script_name):
+        """Runs an external Python script using the subprocess module."""
+        print(f"Attempting to run script: {script_name}...")
+        try:
+            with subprocess.Popen([sys.executable, script_name]):
+                pass
+        except FileNotFoundError:
+            print(f"Error: The script '{script_name}' was not found.")
+        except Exception as e:
+            print(f"An error occurred while trying to run {script_name}: {e}")
 
 
-def create_image_button(frame, img_path, text, script):
-    img = Image.open(img_path).resize((120, 120), Image.LANCZOS)
-    photo = ImageTk.PhotoImage(img)
-
-    images.append(photo)
-
-    lbl = tk.Label(frame, image=photo, bg="white")
-    lbl.pack(pady=(10, 5))
-
-    btn = tk.Button(
-        frame,
-        text=text,
-        font=("Century", 12),
-        bg="black",
-        fg="white",
-        command=lambda: run_script(script),
-        width=18
-    )
-    btn.pack(pady=(0, 10))
-
-
-root = tk.Tk()
-root.title("CobWeb.exe")
-root.geometry("700x500")
-root.configure(background="white")
-
-images = []
-
-title = tk.Label(root, text="CobWeb", font=("Arial", 20, "bold"), bg="white")
-title.pack(pady=15)
-
-content = tk.Frame(root, bg="white")
-content.pack(expand=True, pady=10)
-
-clima_frame = tk.Frame(content, bg="white")
-clima_frame.grid(row=0, column=0, padx=20)
-
-pragas_frame = tk.Frame(content, bg="white")
-pragas_frame.grid(row=0, column=1, padx=20)
-
-plantas_frame = tk.Frame(content, bg="white")
-plantas_frame.grid(row=0, column=2, padx=20)
-
-create_image_button(
-    clima_frame,
-    "img/weather.png",
-    "Clima",
-    "Climas.py"
-)
-create_image_button(
-    pragas_frame,
-    "img/bug.png",
-    "Pragas",
-    "Pragas.py"
-)
-create_image_button(
-    plantas_frame,
-    "img/plant.png",
-    "Plantas Daninhas",
-    "PlantDan.py"
-)
-
-# ---------- Exit Button ----------
-exit_btn = tk.Button(
-    root,
-    text="Sair",
-    font=("Century", 12),
-    bg="black",
-    fg="white",
-    width=15,
-    command=root.quit
-)
-exit_btn.pack(pady=15)
-
-root.mainloop()
+if __name__ == "__main__":
+    app = CobwebApp()
+    app.mainloop()
