@@ -36,7 +36,7 @@ def main():
 
     for linha in range(start_line, end_line + 1):
         tree = fetch_plant_page(linha)
-        if not tree:
+        if tree is None:
             continue
 
         try:
