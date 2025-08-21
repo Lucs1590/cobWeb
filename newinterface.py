@@ -1,85 +1,84 @@
 import os
-import tkinter
-from tkinter import Canvas
-
+import tkinter as tk
 from PIL import Image, ImageTk
 
-TOP = tkinter.Tk()
 
-TOP.title('CobWeb.exe')
-# Arquitetura
-TOP.geometry("600x400")
-TOP.configure(background="white")
+def run_script(script):
+    os.system(f'python {script}')
 
 
-# Funcao
-canvas = Canvas(TOP, bg="black", width=200, height=200)
-canvas2 = Canvas(TOP, bg="black", width=200, height=200)
-canvas3 = Canvas(TOP, bg="black", width=200, height=200)
+def create_image_button(frame, img_path, text, script):
+    img = Image.open(img_path).resize((120, 120), Image.LANCZOS)
+    photo = ImageTk.PhotoImage(img)
+
+    images.append(photo)
+
+    lbl = tk.Label(frame, image=photo, bg="white")
+    lbl.pack(pady=(10, 5))
+
+    btn = tk.Button(
+        frame,
+        text=text,
+        font=("Century", 12),
+        bg="black",
+        fg="white",
+        command=lambda: run_script(script),
+        width=18
+    )
+    btn.pack(pady=(0, 10))
 
 
-def Clima():
-    os.system('python Climas.py')
+root = tk.Tk()
+root.title("CobWeb.exe")
+root.geometry("700x500")
+root.configure(background="white")
 
+images = []
 
-def Pragas():
-    os.system('python Pragas.py')
+title = tk.Label(root, text="CobWeb", font=("Arial", 20, "bold"), bg="white")
+title.pack(pady=15)
 
+content = tk.Frame(root, bg="white")
+content.pack(expand=True, pady=10)
 
-def Plantas():
-    os.system('python PlantDan.py')
+clima_frame = tk.Frame(content, bg="white")
+clima_frame.grid(row=0, column=0, padx=20)
 
+pragas_frame = tk.Frame(content, bg="white")
+pragas_frame.grid(row=0, column=1, padx=20)
 
-def quit():
-    TOP.quit()
+plantas_frame = tk.Frame(content, bg="white")
+plantas_frame.grid(row=0, column=2, padx=20)
 
-
-# Imagem
-img = Image.open("img/weather.png")
-img2 = Image.open("img/bug.png")
-img3 = Image.open("img/plant.png")
-img = img.resize((300, 300), Image.LANCZOS)
-img2 = img2.resize((300, 300), Image.LANCZOS)
-img3 = img3.resize((300, 300), Image.LANCZOS)
-photoimage = ImageTk.PhotoImage(img)
-photoimage2 = ImageTk.PhotoImage(img2)
-photoimage3 = ImageTk.PhotoImage(img3)
-canvas2.create_image(150, 150, image=photoimage2)
-canvas.create_image(150, 150, image=photoimage)
-canvas3.create_image(150, 150, image=photoimage3)
-
-# Botao
-LabelF = tkinter.Label(TOP, text="CobWeb", font=("Arial", 16))
-LabelF.configure(background="white")
-Exit = tkinter.Button(TOP, font=("Century", 12), text="Sair", command=quit)
-Exit.configure(background="black", foreground="white")
-Erosion = tkinter.Button(
-    TOP,
-    font=("Century", 12),
-    text="Clima",
-    command=Clima
+create_image_button(
+    clima_frame,
+    "img/weather.png",
+    "Clima",
+    "Climas.py"
 )
-Erosion.configure(background="black", foreground="white")
-erva = tkinter.Button(
-    TOP,
-    font=("Century", 12),
-    text="Plantas Daninhas",
-    command=Plantas
+create_image_button(
+    pragas_frame,
+    "img/bug.png",
+    "Pragas",
+    "Pragas.py"
 )
-erva.configure(background="black", foreground="white")
-Nivel = tkinter.Button(
-    TOP,
-    font=("Century", 12),
-    text="Pragas",
-    command=Pragas
+create_image_button(
+    plantas_frame,
+    "img/plant.png",
+    "Plantas Daninhas",
+    "PlantDan.py"
 )
-Nivel.configure(background="black", foreground="white")
-LabelF.place(relx=0.5, rely=0, anchor="n")
-Nivel.place(relx=0.44, rely=0.15, anchor="w")
-Erosion.place(relx=0.23, rely=0.15, anchor="e")
-canvas.place(relx=0.34, rely=0.50, anchor="e")
-canvas2.place(relx=0.34, rely=0.5, anchor="w")
-canvas3.place(relx=0.67, rely=0.5, anchor="w")
-erva.place(relx=0.98, rely=0.15, anchor="e")
-Exit.place(relx=0.5, rely=1, anchor="s")
-TOP.mainloop()
+
+# ---------- Exit Button ----------
+exit_btn = tk.Button(
+    root,
+    text="Sair",
+    font=("Century", 12),
+    bg="black",
+    fg="white",
+    width=15,
+    command=root.quit
+)
+exit_btn.pack(pady=15)
+
+root.mainloop()
