@@ -2,7 +2,6 @@ import os
 import tkinter
 from tkinter import Canvas
 
-import ttk
 import Image
 import ImageTk
 
@@ -51,7 +50,7 @@ canvas.create_image(150, 150, image=photoimage)
 canvas3.create_image(150, 150, image=photoimage3)
 
 # Botao
-LabelF = ttk.Label(TOP, text="CobWeb", font=("Arial", 16))
+LabelF = tkinter.ttk.Label(TOP, text="CobWeb", font=("Arial", 16))
 LabelF.configure(background="white")
 Exit = tkinter.Button(TOP, font=("Century", 12), text="Sair", command=quit)
 Exit.configure(background="black", foreground="white")
