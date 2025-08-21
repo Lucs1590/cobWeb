@@ -22,9 +22,11 @@ def month_transform(month):
     try:
         month = int(month)
     except ValueError:
-        months_list = ['janeiro', 'fevereiro', 'março', 'abril', 'maio',
-                       'junho', 'julho', 'agosto', 'setembro', 'outubro',
-                       'novembro', 'dezembro']
+        months_list = [
+            'janeiro', 'fevereiro', 'março', 'abril', 'maio',
+            'junho', 'julho', 'agosto', 'setembro', 'outubro',
+            'novembro', 'dezembro'
+        ]
         month = months_list.index(
             month) + 1 if month in months_list else 'todos'
     return month
@@ -41,7 +43,10 @@ def year_transform(year):
 def get_connection():
     try:
         connection = pymongo.MongoClient(
-            'localhost', 27017, serverSelectionTimeoutMS=3000)
+            'localhost',
+            27017,
+            serverSelectionTimeoutMS=3000
+        )
         db = connection['MongoDB_Samuel_01']
         connection.server_info()
     except Exception:
@@ -52,20 +57,25 @@ def get_connection():
 
 
 def get_data(city, month, year, database=None):
-    cities_csv = csv.reader(open('aux/cities.csv'), delimiter='|')
-    cities_list = list(cities_csv)
+    with open('aux/cities.csv', encoding='utf-8') as f:
+        cities_csv = csv.reader(f, delimiter='|')
+        cities_list = list(cities_csv)
 
     if (str(month) == 'todos') and (str(year) != 'todos'):
         print('Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
  | Corrente de Vento Max. | Descricao')
-        Novo = open('HIST_TODOS_ANO%s_%s.csv' %
-                    (year, city), 'w')
+        Novo = open(
+            f'HIST_TODOS_ANO{year}_{city}.csv',
+            'w',
+            encoding='utf-8'
+        )
         Novo.write(
             'Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
  | Corrente de Vento Max. | Descricao\n\n')
         month = 1
-        Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s, NO MES %d\n\n' %
-                   (city, month))
+        Novo.write(
+            f'TODOS OS DADOS DE 2015 A 2017 DE {city}, NO MES {month}\n\n'
+        )
 
         while month < 13:
             mes_a_mes = busca_site(
@@ -77,13 +87,16 @@ def get_data(city, month, year, database=None):
     if (str(month) != 'todos') and (str(year) == 'todos'):
         print('Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
  | Corrente de Vento Max. | Descricao')
-        Novo = open('HIST_MES%s_TODOS_%s.csv' %
-                    (month, city), 'w')
+        Novo = open(
+            f'HIST_MES{month}_TODOS_{city}.csv',
+            'w',
+            encoding='utf-8'
+        )
         Novo.write(
             'Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
  | Corrente de Vento Max. | Descricao\n\n')
         year = 2015
-        Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % city)
+        Novo.write(f'TODOS OS DADOS DE 2015 A 2017 DE {city}\n\n')
 
         while year < 2018:
             mes_a_mes = busca_site(city, month, year, cities_list, database)
@@ -94,13 +107,13 @@ def get_data(city, month, year, database=None):
     if (str(month) == 'todos') and (str(year) == 'todos'):
         print('Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
  | Corrente de Vento Max. | Descricao')
-        Novo = open('HIST_GERAL_%s.csv' % city, 'w')
+        Novo = open(f'HIST_GERAL_{city}.csv', 'w', encoding='utf-8')
         Novo.write(
             'Linha (Dia) | Temp. Min. | Temp. Max. | Vento Constante Max.\
  | Corrente de Vento Max. | Descricao\n\n')
         month = 1
         year = 2015
-        Novo.write('TODOS OS DADOS DE 2015 A 2017 DE %s\n\n' % city)
+        Novo.write(f'TODOS OS DADOS DE 2015 A 2017 DE {city}\n\n')
 
         while year < 2018:
             while month < 13:
@@ -129,14 +142,8 @@ def busca_site(city, month, year, cities_list, db=None):
     else:
         raise ValueError('Cidade não foi encontrada!')
     page = requests.get(
-        'http://freemeteo.com.br/clima/{0}/historico/historico-por-mes/\
-                    ?gid={1}&station={2}&month={3}&year={4}&language=portuguesebr&country=brazil'
-        .format(
-            str(city_data[0]),
-            str(city_data[1]),
-            str(city_data[2]),
-            month,
-            year)
+        f'http://freemeteo.com.br/clima/{str(city_data[0])}/historico/historico-por-mes/?gid={str(city_data[1])}&station={str(city_data[2])}&month={month}&year={year}&language=portuguesebr&country=brazil',
+        timeout=10
     )
     tree = html.fromstring(page.content)
 
@@ -145,32 +152,26 @@ def busca_site(city, month, year, cities_list, db=None):
 
     while i < 32:
         dia = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[{}]/td[1]/a/text()'
-            .format(i)
+            f'id("monthly-archive")/div[3]/div/table/tbody/tr[{i}]/td[1]/a/text()'
         )
         temp_min_dia = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[{}]/td[2]/text()'
-            .format(i)
+            f'id("monthly-archive")/div[3]/div/table/tbody/tr[{i}]/td[2]/text()'
         )
         temp_max_dia = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[{}]/td[3]/text()'
-            .format(i)
+            f'id("monthly-archive")/div[3]/div/table/tbody/tr[{i}]/td[3]/text()'
         )
         vent_const_max = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[{}]/td[4]/text()'
-            .format(i)
+            f'id("monthly-archive")/div[3]/div/table/tbody/tr[{i}]/td[4]/text()'
         )
         rajad_vent_max = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[{}]/td[5]/text()'
-            .format(i)
+            f'id("monthly-archive")/div[3]/div/table/tbody/tr[{i}]/td[5]/text()'
         )
         descricao = tree.xpath(
-            'id("monthly-archive")/div[3]/div/table/tbody/tr[{}]/td[10]/text()'
-            .format(i)
+            f'id("monthly-archive")/div[3]/div/table/tbody/tr[{i}]/td[10]/text()'
         )
 
         if len(dia) == 0:
-            dia == '--'
+            dia = ['--']
 
         if len(temp_min_dia) == 0:
             temp_min_dia = '--ºC'
