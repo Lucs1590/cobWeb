@@ -12,6 +12,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+DB_NAME = "MongoDB_Samuel_01"
+COLLECTION_NAME = 'plant_dan'
+BASE_URL = "http://agrofit.agricultura.gov.br/agrofit_cons/!ap_planta_detalhe_cons?p_id_planta_daninha="
+
 
 def parse_arguments() -> Optional[argparse.Namespace]:
     """Parse command-line arguments."""
@@ -61,13 +65,7 @@ def main():
     char_mapping = create_character_mapping()
     normalized_plant_name = normalize_plant_name(plant_name, char_mapping)
 
-    try:
-        client = pymongo.MongoClient("localhost", 27017)
-        db = client["MongoDB_Samuel_01"]
-        logger.info("Connected to MongoDB")
-    except Exception as e:
-        logger.error("Error connecting to MongoDB: %s", e)
-        return
+    database = connect_to_database()
 
     output_filename = f'PRAGAS COBWEB - Planta-Daninha({plant_name}).csv'
 
@@ -113,7 +111,7 @@ def main():
                 except Exception as e:
                     logger.error("Error writing to file: %s", e)
 
-                save_to_mongodb(db, plant_data, linha)
+                save_to_mongodb(database, plant_data, linha)
                 print(formatted_info)
                 break
 
@@ -126,8 +124,6 @@ def main():
         print(
             "Planta '%s' não foi encontrada no intervalo especificado.", plant_name
         )
-
-    client.close()
 
 
 def create_character_mapping() -> Dict[str, str]:
@@ -158,9 +154,29 @@ def normalize_plant_name(plant_name: str, char_mapping: Dict[str, str]) -> str:
     return normalized_name
 
 
+def connect_to_database() -> Optional[pymongo.database.Database]:
+    """Establish connection to MongoDB database."""
+    try:
+        client = pymongo.MongoClient(
+            'localhost',
+            27017,
+            serverSelectionTimeoutMS=3000
+        )
+        db = client[DB_NAME]
+
+        client.server_info()
+        logger.info("Connected to MongoDB successfully")
+        return db
+
+    except Exception as e:
+        logger.warning("Database connection failed: %s", e)
+        print('Sem banco de dados! Continuando sem salvar no banco.')
+        return None
+
+
 def fetch_plant_page(linha: int) -> Optional[html.HtmlElement]:
     """Fetch and parse plant page from the website."""
-    url = f'http://agrofit.agricultura.gov.br/agrofit_cons/!ap_planta_detalhe_cons?p_id_planta_daninha={linha}'
+    url = f"{BASE_URL}{linha}"
 
     try:
         response = requests.get(url, timeout=10)
@@ -235,7 +251,7 @@ ________________________________________________________________________________
     return plant_info
 
 
-def save_to_mongodb(db, data: Dict[str, str], linha: int) -> None:
+def save_to_mongodb(database, data: Dict[str, str], linha: int) -> None:
     """Save plant data to MongoDB."""
     try:
         document = {
@@ -257,7 +273,7 @@ def save_to_mongodb(db, data: Dict[str, str], linha: int) -> None:
             "observacao": data['observacao']
         }
 
-        db.plant_dan.update_one(
+        database[COLLECTION_NAME].update_one(
             {"linha": str(linha)},
             {"$set": document},
             upsert=True
