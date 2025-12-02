@@ -1,4 +1,4 @@
-cython==3.2.1
+cython==3.2.2
 Image==1.5.33
 lxml==6.0.2
 pymongo==4.15.4
