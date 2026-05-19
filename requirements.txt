@@ -3,4 +3,4 @@ Image==1.5.33
 lxml==6.1.0
 pymongo==4.17.0
 pillow==12.2.0
-Requests==2.34.0
+Requests==2.34.2
