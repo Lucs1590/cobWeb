@@ -1,6 +1,6 @@
 cython==3.2.9
 Image==1.5.33
-lxml==6.1.1
+lxml==6.1.2
 pymongo==4.17.0
 pillow==12.3.0
 Requests==2.34.2
